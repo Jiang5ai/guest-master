@@ -137,17 +137,11 @@ def add_guest(request):
                              'message': 'event number is full'})
 
     event_time = Event.objects.get(id=eid).start_time                   # 发布会时间
-    timearray = time.strptime(
-        str(event_time),
-        "%Y-%m-%d %H:%M:%S")     # 将发布会时间转换成struct_time的形式
-    # 做换为时间戳
-    e_time = int(time.mktime(timearray))
-
+    timearray = time.strptime(str(event_time), "%Y-%m-%d %H:%M:%S")     # 将发布会时间转换成struct_time的形式
+    e_time = int(time.mktime(timearray))                                # 做换为时间戳
     now_time = str(time.time())                                         # 当前时间
-    # 截取当前时间.前的字符
-    ntime = now_time.split(".")[0]
-    # 转换为int类型
-    n_time = int(ntime)
+    ntime = now_time.split(".")[0]                                      # 截取当前时间.前的字符
+    n_time = int(ntime)                                                 # 转换为int类型
 
     # 校验当前时间是否超过发布会开始时间
     if n_time >= e_time:
