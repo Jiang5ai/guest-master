@@ -60,8 +60,8 @@ def add_event(request):
 # 发布会查询
 def get_event_list(request):
 
-    eid = request.GET.get("eid", "")      # 发布会id
-    name = request.GET.get("name", "")    # 发布会名称
+    eid = request.GET.get("eid", "")                            # 发布会id
+    name = request.GET.get("name", "")                          # 发布会名称
 
     # 非空校验
     if eid == '' and name == '':
@@ -128,8 +128,8 @@ def add_guest(request):
         return JsonResponse({'status': 10023,
                              'message': 'event status is not available'})
 
-    event_limit = Event.objects.get(id=eid).limit      # 发布会最大人数
-    guest_limit = Guest.objects.filter(id=eid)         # 发布会已有嘉宾人数
+    event_limit = Event.objects.get(id=eid).limit                       # 发布会最大人数
+    guest_limit = Guest.objects.filter(id=eid)                          # 发布会已有嘉宾人数
 
     # 校验发布会人数是否超出
     if len(guest_limit) >= event_limit:
