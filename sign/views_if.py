@@ -236,3 +236,29 @@ def user_sign(request):
     else:
         Guest.objects.filter(phone=phone).update(sign='1')
         return JsonResponse({'status': 200, 'message': 'sign success'})
+
+
+# 查询发布会参与人数及签到人数
+def get_sign_user(request):
+    eid = request.GET.get("eid", '')                                               # 发布会id
+
+    if eid == '':
+        return JsonResponse({'status': 10021, 'message': 'parameter error'})
+
+    result = Event.objects.filter(id=eid)
+    if not result:
+        return JsonResponse({'status': 10022, 'message': 'The event does not exist'})
+
+    result = Guest.objects.filter(event_id=eid)
+    if not result:
+        return JsonResponse({'status': 10023, 'message': 'No guests attended the press conference'})
+
+    guest_list = Guest.objects.filter(event_id=eid)                                 # 签到人数
+    sign_list = Guest.objects.filter(sign="1", event_id=eid)                        # 已签到数
+    guest_data = str(len(guest_list))
+    sign_data = str(len(sign_list))
+    return JsonResponse({'status': 10023, 'message': 'success', 'guest_data': guest_data, 'sign_data': sign_data})
+
+
+
+

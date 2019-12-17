@@ -20,6 +20,8 @@ urlpatterns = [
     url(r'^get_guest_list/', views_if.get_guest_list, name='get_guest_list'),
     # ex : /api/user_sign/
     url(r'^user_sign/', views_if.user_sign, name='user_sign'),
+    # ex : /api/user_sign/
+    url(r'^get_sign_user/', views_if.get_sign_user, name='get_sign_user'),
     # security interface:
     # ex : /api/sec_get_event_list/
     # url(r'^sec_get_event_list/', views_if_sec.get_event_list, name='get_event_list'),
