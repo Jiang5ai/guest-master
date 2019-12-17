@@ -13,12 +13,12 @@ from django.db.utils import IntegrityError
 
 # 添加发布会接口
 def add_event(request):
-    eid = request.POST.get('eid', '')                          # 发布会id
-    name = request.POST.get('name', '')                        # 发布会标题
-    limit = request.POST.get('limit', '')                      # 限制人数
-    status = request.POST.get('status', '')                    # 状态
-    address = request.POST.get('address', '')                  # 地址
-    start_time = request.POST.get('start_time', '')            # 发布会时间
+    eid = request.POST.get('eid', '')                                   # 发布会id
+    name = request.POST.get('name', '')                                 # 发布会标题
+    limit = request.POST.get('limit', '')                               # 限制人数
+    status = request.POST.get('status', '')                             # 状态
+    address = request.POST.get('address', '')                           # 地址
+    start_time = request.POST.get('start_time', '')                     # 发布会时间
 
     # 非空判断
     if eid == '' or name == '' or limit == '' or address == '' or start_time == '':
@@ -60,8 +60,8 @@ def add_event(request):
 # 发布会查询
 def get_event_list(request):
 
-    eid = request.GET.get("eid", "")                            # 发布会id
-    name = request.GET.get("name", "")                          # 发布会名称
+    eid = request.GET.get("eid", '')                                    # 发布会id
+    name = request.GET.get("name", '')                                  # 发布会名称
 
     # 非空校验
     if eid == '' and name == '':
@@ -86,7 +86,7 @@ def get_event_list(request):
 
     if name != '':
         datas = []
-        results = Event.objects.filter(name__contains=name)
+        results = Event.objects.filter(name__icontains=name)
         if results:
             for r in results:
                 event = dict()
@@ -106,10 +106,11 @@ def get_event_list(request):
 
 # 添加嘉宾接口
 def add_guest(request):
-    eid = request.POST.get('eid', '')               # 关联发布会id
-    realname = request.POST.get('realname', '')     # 姓名
-    phone = request.POST.get('phone', '')           # 手机号
-    email = request.POST.get('email', '')           # 邮箱
+    # 关联发布会id
+    eid = request.POST.get('eid', '')
+    realname = request.POST.get('realname', '')                         # 姓名
+    phone = request.POST.get('phone', '')                               # 手机号
+    email = request.POST.get('email', '')                               # 邮箱
 
     # 非空校验
     if eid == '' or realname == '' or phone == '':
@@ -128,8 +129,10 @@ def add_guest(request):
         return JsonResponse({'status': 10023,
                              'message': 'event status is not available'})
 
-    event_limit = Event.objects.get(id=eid).limit                       # 发布会最大人数
-    guest_limit = Guest.objects.filter(id=eid)                          # 发布会已有嘉宾人数
+    event_limit = Event.objects.get(
+        id=eid).limit                       # 发布会最大人数
+    guest_limit = Guest.objects.filter(
+        id=eid)                          # 发布会已有嘉宾人数
 
     # 校验发布会人数是否超出
     if len(guest_limit) >= event_limit:
@@ -137,11 +140,16 @@ def add_guest(request):
                              'message': 'event number is full'})
 
     event_time = Event.objects.get(id=eid).start_time                   # 发布会时间
-    timearray = time.strptime(str(event_time), "%Y-%m-%d %H:%M:%S")     # 将发布会时间转换成struct_time的形式
-    e_time = int(time.mktime(timearray))                                # 做换为时间戳
+    timearray = time.strptime(
+        str(event_time),
+        "%Y-%m-%d %H:%M:%S")     # 将发布会时间转换成struct_time的形式
+    # 做换为时间戳
+    e_time = int(time.mktime(timearray))
     now_time = str(time.time())                                         # 当前时间
-    ntime = now_time.split(".")[0]                                      # 截取当前时间.前的字符
-    n_time = int(ntime)                                                 # 转换为int类型
+    # 截取当前时间.前的字符
+    ntime = now_time.split(".")[0]
+    # 转换为int类型
+    n_time = int(ntime)
 
     # 校验当前时间是否超过发布会开始时间
     if n_time >= e_time:
@@ -159,3 +167,17 @@ def add_guest(request):
                              'message': 'the event guest phone number repeat'})
 
     return JsonResponse({'status': 200, 'message': 'add guest success'})
+
+
+# 嘉宾查询接口
+def get_guest_list(request):
+    eid = request.GET.get("eid", "")                            # 发布会id
+    phone = request.GET.get("phone", "")                        # 手机号
+
+    if eid == '':
+        return JsonResponse(
+            {'status': 10021, 'message': 'eid cannot be empty'})
+
+
+def user_sign(request):
+    pass
