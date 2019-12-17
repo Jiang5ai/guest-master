@@ -58,7 +58,7 @@ def get_event_list(request):
     name = request.GET.get("name", '')                                  # 发布会名称
 
     # 非空校验
-    if eid == '' and name == '':
+    if eid == '' or name == '':
         return JsonResponse({'status': 10021, 'message': 'parameter error'})
 
     if eid != '':
@@ -110,7 +110,7 @@ def add_guest(request):
     # 校验发布会是否存在
     result = Event.objects.filter(id=eid)
     if not result:
-        return JsonResponse({'status': 10022,'message': 'event id null'})
+        return JsonResponse({'status': 10022, 'message': 'event id null'})
 
     # 校验发布会状态是否为1
     result = Event.objects.get(id=eid).status
@@ -126,7 +126,8 @@ def add_guest(request):
 
     event_time = Event.objects.get(id=eid).start_time                   # 发布会时间
     timearray = time.strptime(str(event_time), "%Y-%m-%d %H:%M:%S")     # 将发布会时间转换成struct_time的形式
-    e_time = int(time.mktime(timearray))                                # 做换为时间戳
+    e_time = int(time.mktime(timearray))                                # 转换为时间戳
+
     now_time = str(time.time())                                         # 当前时间
     ntime = now_time.split(".")[0]                                      # 截取当前时间.前的字符
     n_time = int(ntime)                                                 # 转换为int类型
@@ -153,10 +154,12 @@ def get_guest_list(request):
     eid = request.GET.get("eid", "")                            # 发布会id
     phone = request.GET.get("phone", "")                        # 手机号
 
+    # 非空校验
     if eid == '':
         return JsonResponse(
             {'status': 10021, 'message': 'eid cannot be empty'})
 
+    # 校验发布会是否存在
     if eid != '' and phone == '':
         datas = []
         result = Guest.objects.filter(event_id=eid)
@@ -171,7 +174,7 @@ def get_guest_list(request):
             return JsonResponse({'status': 200, 'message': 'success', 'data': datas})
         else:
             return JsonResponse({'status': 10022, 'message': 'query result is empty'})
-
+    # 校验是否存在此条记录
     if eid != '' and phone != '':
         guest = dict()
         try:
@@ -187,4 +190,49 @@ def get_guest_list(request):
 
 
 def user_sign(request):
-    pass
+    eid = request.GET.get("eid", "")                                                # 发布会id
+    phone = request.GET.get("phone", "")                                            # 手机号
+
+    # 非空校验
+    if eid == '' or phone == '':
+        return JsonResponse({'status': 10021, 'message': 'parameter error'})
+
+    # 校验发布会是否存在
+    result = Guest.objects.filter(event_id=eid)
+    if not result:
+        return JsonResponse({'status': 10022, 'message': 'event id null'})
+
+    # 校验发布会状态
+    result = Event.objects.get(id=eid).status
+    if not result:
+        return JsonResponse({'status': 10023, 'message': 'event status is not available'})
+
+    event_time = Event.objects.get(id=eid).start_time                   # 发布会时间
+    timearray = time.strptime(str(event_time), "%Y-%m-%d %H:%M:%S")     # 将发布会时间转换成struct_time的形式
+    e_time = int(time.mktime(timearray))                                # 转换为时间戳
+
+    now_time = str(time.time())                                         # 当前时间
+    ntime = now_time.split(".")[0]                                      # 截取当前时间.前的字符
+    n_time = int(ntime)                                                 # 转换为int类型
+
+    # 校验发布会是否已经开始
+    if n_time >= e_time:
+        return JsonResponse({'status': 10024, 'message': 'event has started'})
+
+    # 校验参加发布会嘉宾的手机号是否存在
+    result = Guest.objects.filter(phone=phone)
+    if not result:
+        return JsonResponse({'status': 10025, 'message': 'user phone null'})
+
+    # 嘉宾及发布会是否存在
+    result = Guest.objects.filter(phone=phone, event_id=eid)
+    if not result:
+        return JsonResponse({'status': 10026, 'message': 'user did not participate in the conference'})
+
+    # 校验嘉宾是否已签到，未签到改为已签到状态
+    result = Guest.objects.get(event_id=eid, phone=phone).sign
+    if result:
+        return JsonResponse({'status': 10027, 'message': 'user has sign in'})
+    else:
+        Guest.objects.filter(phone=phone).update(sign='1')
+        return JsonResponse({'status': 200, 'message': 'sign success'})
